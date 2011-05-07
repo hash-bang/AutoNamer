@@ -1,0 +1,119 @@
+NAME
+    an - AutoNamer, Simple app that tries to correctly name media files.
+
+SYNOPSIS
+            an [options] [files...]
+
+OPTIONS
+    --dir [path]
+    -d [path]
+            By default AN will try to rename the file in place, not altering
+            the original files path. If you wish to output the media file to
+            an alternate directory you can specify the output path here.
+
+    --dryrun
+    -n      Do everything BUT change the filename. This is used mainly to
+            see what AN *would* do without actually doing it.
+
+    --garbage
+    --no-garbage
+            Try to clean up the filename by removing all non english
+            standard characters from the file name. Can be negated with
+            --no-year.
+
+    --imdb
+    --no-imdb
+            Try to contact IMDB to finalize details we've guessed in the
+            earlier stages. Can be negated with --no-imdb.
+
+    --interactive
+    -i      Specifies that AN should operate in interactive mode. After
+            determining the desination file the user will be presented with
+            options as to what operations to apply.
+
+    --regexp
+    --no-regexp
+            Apply the known regular expression hacks to try to tidy up the
+            title. Can be negated with --no-regexp.
+
+    --skipaf
+            Skip the IMDB stage if we dont manage to clean up the file name
+            correctly. If not set (the default) and the autocorrection stage
+            fails, the original filename will be passed onto IMDB in a last
+            ditch attempt to get something meaningful.
+
+    -v
+    --verbose
+            Be more verbose when outputting information to STDERR. Specify
+            multiple times to increase verbosity.
+
+    -t [string]
+    --template [string]
+            Overide the default output filename template. By default the
+            template is '%t.%e'.
+
+            The following strings will be expanded when determining the
+            output filename:
+
+            %e  The original file extension.
+
+            %t  The title of the media, determined after the auto correction
+                and (optional) IMDB stages.
+
+            %y  The year the media was made.
+
+    --year
+    --no-year
+            Extract the year of the media from the title and use it in the
+            subsequent IMDB query (unless --no-imdb is set) Can be negated
+            with --no-year.
+
+DESCRIPTION
+    AN is a simple file renamer that trys to apply a variety of methods to
+    determine the true name of a given set of files. It can optionally
+    rename the source files (and even move them) to the output filenames.
+
+EXAMPLES
+    an movies/*
+        Simplist use of AN. This will scan the contents of the 'movies'
+        directory for files matching recognized extensions. If it matches it
+        will inteligently rename them.
+
+    an -n movies/*
+        Same as above but doesn't actually do anything. This is useful to
+        see the effect of the renaming process without actually applying the
+        effects.
+
+    an movies/* -d .
+        Scan the 'movies' directory renaming files as we go. Renamed files
+        will be moved into the current directory.
+
+    an movies/* -d -t '%t (%y).%e
+        Same as above but also renames the files using the format 'Title
+        (year).extension' e.g. 'Troy (2004).avi'.
+
+INSTALLATION
+    AN requires a certain set of CPAN modules. These can be installed using
+    the following command as root:
+
+            cpan IMDB::Film
+
+    The module IMDB::Film has a nasty habit of failing tests. If prompted to
+    perform these during the CPAN installation its probably best to select
+    the default 'no' option when asked if you wish to test the module.
+
+BUGS
+    Quite probably.
+
+    Please report to the author when found.
+
+AUTHOR
+    Matt Carter <m@ttcarter.com>
+
+POD ERRORS
+    Hey! The above document had some coding errors, which are explained
+    below:
+
+    Around line 98:
+        You forgot a '=back' before '=head1'
+

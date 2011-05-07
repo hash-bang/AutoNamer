@@ -1,8 +1,154 @@
 #!/usr/bin/perl
+# POD {{{
+=head1 NAME
+
+an - AutoNamer, Simple app that tries to correctly name media files.
+
+=head1 SYNOPSIS
+
+	an [options] [files...]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--dir [path]>
+
+=item B<-d [path]>
+
+By default AN will try to rename the file in place, not altering the original files path. If you wish to output the media file to an alternate directory you can specify the output path here.
+
+=item B<--dryrun>
+
+=item B<-n>
+
+Do everything BUT change the filename. This is used mainly to see what AN I<would> do without actually doing it.
+
+=item B<--garbage>
+
+=item B<--no-garbage>
+
+Try to clean up the filename by removing all non english standard characters from the file name.
+Can be negated with --no-year.
+
+=item B<--imdb>
+
+=item B<--no-imdb>
+
+Try to contact IMDB to finalize details we've guessed in the earlier stages.
+Can be negated with --no-imdb.
+
+=item B<--interactive>
+
+=item B<-i>
+
+Specifies that AN should operate in interactive mode. After determining the desination file the user will be presented with options as to what operations to apply.
+
+=item B<--regexp>
+
+=item B<--no-regexp>
+
+Apply the known regular expression hacks to try to tidy up the title.
+Can be negated with --no-regexp.
+
+=item B<--skipaf>
+
+Skip the IMDB stage if we dont manage to clean up the file name correctly.
+If not set (the default) and the autocorrection stage fails, the original filename will be passed onto IMDB in a last ditch attempt to get something meaningful.
+
+=item B<-v>
+
+=item B<--verbose>
+
+Be more verbose when outputting information to STDERR.
+Specify multiple times to increase verbosity.
+
+=item B<-t [string]>
+
+=item B<--template [string]>
+
+Overide the default output filename template.
+By default the template is '%t.%e'.
+
+The following strings will be expanded when determining the output filename:
+
+=over
+
+=item B<%e>
+
+The original file extension.
+
+=item B<%t>
+
+The title of the media, determined after the auto correction and (optional) IMDB stages.
+
+=item B<%y>
+
+The year the media was made.
+
+=back
+
+=item B<--year>
+
+=item B<--no-year>
+
+Extract the year of the media from the title and use it in the subsequent IMDB query (unless --no-imdb is set)
+Can be negated with --no-year.
+
+=head1 DESCRIPTION
+
+AN is a simple file renamer that trys to apply a variety of methods to determine the true name of a given set of files.
+It can optionally rename the source files (and even move them) to the output filenames.
+
+=head1 EXAMPLES
+
+=over
+
+=item B<an movies/*>
+
+Simplist use of AN.
+This will scan the contents of the 'movies' directory for files matching recognized extensions. If it matches it will inteligently rename them.
+
+=item B<an -n movies/*>
+
+Same as above but doesn't actually do anything. This is useful to see the effect of the renaming process without actually applying the effects.
+
+=item B<an movies/* -d .>
+
+Scan the 'movies' directory renaming files as we go. Renamed files will be moved into the current directory.
+
+=item B<an movies/* -d -t '%t (%y).%e>
+
+Same as above but also renames the files using the format 'Title (year).extension' e.g. 'Troy (2004).avi'.
+
+=back
+
+=head1 INSTALLATION
+
+AN requires a certain set of CPAN modules. These can be installed using the following command as root:
+
+	cpan IMDB::Film
+
+The module IMDB::Film has a nasty habit of failing tests. If prompted to perform these during the CPAN installation its probably best to select the default 'no' option when asked if you wish to test the module.
+
+=head1 BUGS
+
+Quite probably.
+
+Please report to the author when found.
+
+=head1 AUTHOR
+
+Matt Carter <m@ttcarter.com>
+
+=cut
+# }}} POD
+
 # Header {{{
 package an;
-our $VERSION = '0.1.1';
+our $VERSION = '0.1.0';
 
+use feature 'switch';
 use File::Basename;
 use Getopt::Long;
 use IMDB::Film;
@@ -16,97 +162,153 @@ use Data::Dump; # FIXME: Debug use only
 # }}} Header
 
 # Options {{{
-our $yearmatch = qr/.*([0-9]{4}).*/; # Year grabbing RegExp
+# Below is the computed best matching filters used during the RegExp cleanup process
+# They are by no means perfect but seem to capture about 90% of crud passed though them
+# Order is important so think about any filters you wish to add or remove since the ones below it will likely be effected
+
+our $yearmatch = qr/.*([0-9]{4}).*/; # Year grabbing RegExp. I cannot ever see this changing but it looks nice in the options section dont you think?
 our @regexps = ( # Regular expressions used to tidy up file name
 	qr/www\..+?\.com/i, # Clean up www.address.com
-	qr/dvdrip/i,
-	qr/english|italian|spanish|german|dutch/i, # Countries
+	qr/dvdrip/i, # Simple strings we dont care about
+	qr/english|italian|spanish|german|dutch/i, # Languages
 	qr/720p|AC3/, # Resolutions
 	qr/final|screener|cam/i, # Types
 	qr/\(.+?\)/, # Strip brackets
 	qr/\[.+?\]/, # ... All kinds of brackets
-	qr/\{.+?\}/,
+	qr/\{.+?\}/, # ... Thats a lotta brackets
+	qr/\<.+?\>/, # ... Still more brackets
 
-	qr/^swghd-/, #Annoying studios that put their name first
-
+	qr/^swghd-/, # Annoying studios that put their name first, screwing up the next RegExp
 	qr/-.*$/, # Clean up suffixes (e.g. '-Axxo')
 
-	qr/[A-Z][a-z]+[A-Z][a-zA-Z]*/, # CamelCasing
+	qr/[A-Z][a-z]+[A-Z][a-zA-Z]*/, # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
+	qr/[0-9]{4}/, # Strip remaining year stuff out of the title
 );
 # }}} Options
 
-my $use_imdb = 1;
+# CLI {{{
+my $use_imdb = 1; # Turn on all these things by default. If the user dones't want he can use --no-imdb or --noimdb
 my $use_regexp = 1;
 my $use_year = 1;
 my $use_garbage = 1;
 my $template = "%t.%e";
-GetOptions(
+GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	# Global options
-	'imdb|i' => \$use_imdb,
-	'regexp|r' => \$use_regexp,
-	'year|y' => \$use_year,
-	'garbage|g' => \$use_garbage,
+	'imdb!' => \$use_imdb,
+	'regexp!' => \$use_regexp,
+	'year!' => \$use_year,
+	'garbage!' => \$use_garbage,
 	'verbose|v+' => \$verbose,
-	'skip_af' => \$skip_af, # Skip on Autocorrection fail (i.e. dont bother with imdb)
-	'template|t=s' => \$template, # Template to use when renaming (%t = title, %y = year, %e = ext)
+	'skip!' => \$skip_af,
+	'template|t=s' => \$template,
 	'dir|d=s' => \$udir, # Override dir to output to (e.g. '.')
 	'dryrun|n' => \$dryrun, # Dont actually do anything
+	'interactive|i!' => \$interactive,
 );
-$udir =~ s/\/$//; # Strip final '/' if it has one
+$udir =~ s/\/$//; # Strip final '/' from the output dir if the user specified one
+# }}} CLI
 
-while ($file = shift) {
+FILE: while ($raw = shift) { # For each file...
 	my $year;
-	my $dir = dirname($file);
-	$_ = basename($file);
-	unless (s/\.((?:avi|mp.|mkv|mov))$//) {
-		say(1, "Unrecognized file type: $file. Ignoring");
-		next;
+	my $dir = dirname($raw); # Extract the dir...
+	$_ = $original = basename($raw); # ...And throw it away, leaving the pure file name
+	unless (s/\.((?:avi|mp[0-9]|mkv|mov|qt|vob|yav|raw))$//) { # We only care about these
+		say(1, "Unrecognized file type: $original. Ignoring");
+		next FILE;
 	}
-	my $ext = $1;
+	my $ext = $1; # Nasty hack to work around extracting from a s//
 
-	say(1, "File: $file");
+	say(1, "File: $original");
 	(($year) = (m/$yearmatch/)) if $use_year; # Try to determine year
-	if ($use_regexp) {
+	if ($use_regexp) { # Apply the RegExp fixes?
 		foreach $re (@regexps) {
 			say(5, "Apply: [$re] to [$_]");
 			s/$re//i;
 			last unless $_;
 		}
 	}
-	s/[0-9]{4}//; # Stip year stuff out of title
 	s/[^a-z0-9]+/ /gi if ($use_garbage); # Strip garbage characters
+	s/^\s*//; s/\s*$//; # Trim fore & aft
 
-	unless ($_) {
+	unless ($_) { # Nothing left?
 		say(0, " * Auto correction failed");
-		$_ = $file;
-		next if $skip_af;
+		next FILE if $skip_af; # Skip if skipaf is on
+		$_ = $original; # Otherwise restore original name
 	}
 	my $title = $_;
-	say(1, " * Guessed name: $_");
+	say(1, " * Guessed name: $_"); # Spew debugging info if the user cares
 	say(1, " * Guessed year: $year") if $year;
 	say(2, " * Ext: $ext");
 	say(2, " * Dir: $dir");
 
-	if ($use_imdb) {
-		my $film = new IMDB::Film(
+	if ($use_imdb) { # Ask IMDB to tidy up what we have?
+		my $film = new IMDB::Film( # Perl has a module for everything, yey Perl!
 			crit => $title,
 			year => $year,
 		);
 		if ($film->status()) {
 			$title = $film->title();
 			$year = $film->year();
-			say(1, "IMDB Title = $title ($year)");
+			say(1, "IMDB result: $title ($year)");
 		} else {
-			say(1, "IMDB - Nothing found. Skipping");
-			next;
+			say(1, "IMDB: Nothing found");
 		}
 	}
 
-	my $new = $template;
+	my $new = $template; # Construct the output template
 	$new =~ s/%t/$title/;
 	$new =~ s/%y/$year/;
 	$new =~ s/%e/$ext/;
-	$new = ($udir) ? "$udir/$new" : "$dir/$new";
 
-	say(0, "Rename '$file' '$new'");
+	if ($interactive) { # Interactive mode
+		CONSOLE: {
+			say(0) if $fileno++; # Intert blank line so we dont upset dumb people
+			say(0, "Original: $original");
+			say(0, "New name: $new");
+			given (ask('Option', 'g', qw/g s r o q ?/)) {
+				when ('?') { # Help / Confusion key
+					say(0, <DATA>);
+					redo CONSOLE;
+				}
+				when ('g') { # Do it
+					$new = ($udir) ? "$udir/$new" : "$dir/$new";
+					say(0, "Rename '$raw' '$new'");
+					unless ($dryrun) {
+						say(0, "Problem moving file '$raw' to '$new'") unless rename $raw, $new;
+					}
+				}
+				when ('s') { next FILE } # Skip
+				when (/r|o/) { # Display editable prompt using either the AN (option: r) or unedited (option: o) filename as the detault
+					if ($newname = prompt("Specify name", /o/ ? $new : $original, 0, [$new, $original])) {
+						$new = $newname;
+						redo CONSOLE;
+					} else {
+						redo CONSOLE unless $newname;
+					}
+				}
+				when ('q') {
+					say(0, "Quiting");
+					exit 1;
+				}
+				default { say(0, "Invalid value. Skipping"); next FILE }
+			}
+		}
+	} else { # Non-interactive mode - try to rename 
+		$new = ($udir) ? "$udir/$new" : "$dir/$new";
+		say(0, "Rename '$raw' '$new'");
+		unless ($dryrun) {
+			say(0, "Problem moving file '$original' to '$new'") unless rename $raw, $new;
+		}
+	}
 }
+
+exit 0;
+
+# DATA contains the console help screen because I'm lazy and can't be arsed to deal with this in a HereDoc
+__DATA__
+g	Go (default)	Perform the suggested rename operation
+s	Skip		Do not do anything to this file. Move onto the next
+r	Rename		Let me override the AN suggested naming
+o	Original ren	Same as 'r' but use the original filename
+q	Quit		Stop all further operations and exit immediately
+?	Help		Display this help screen
