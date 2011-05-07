@@ -95,6 +95,8 @@ The year the media was made.
 Extract the year of the media from the title and use it in the subsequent IMDB query (unless --no-imdb is set)
 Can be negated with --no-year.
 
+=back
+
 =head1 DESCRIPTION
 
 AN is a simple file renamer that trys to apply a variety of methods to determine the true name of a given set of files.
