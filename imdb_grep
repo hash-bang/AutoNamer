@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+# POD {{{
+=head1 NAME
+
+imdb_grep - Simple IMDB search program
+
+=head1 SYNOPSIS
+
+	foobar [search string]
+
+=head1 DESCRIPTION
+
+Returns the first maching movie from IMDB.
+
+=head1 EXAMPLES
+
+=over
+
+=item B<imdb_grep Troy>
+
+Trys to find the movie 'Troy'
+
+=head1 BUGS
+
+Quite probably.
+
+Please report to the author when found.
+
+=head1 AUTHOR
+
+Matt Carter <m@ttcarter.com>
+
+=cut
+# }}} POD
+
+use IMDB::Film;
+use Data::Dump;
+
+my $film = new IMDB::Film(
+	crit => shift,
+);
+
+if ($film->status()) {
+	print "Title = ", $film->title(), "\n";
+	print "Kind = ", $film->kind(), "\n";
+	print "Year = ", $film->year(), "\n";
+} else {
+	print "Nothing found\n";
+}

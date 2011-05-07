@@ -1,0 +1,112 @@
+#!/usr/bin/perl
+# Header {{{
+package an;
+our $VERSION = '0.1.1';
+
+use File::Basename;
+use Getopt::Long;
+use IMDB::Film;
+use Input::Cli;
+use IO::Handle;
+Getopt::Long::Configure('bundling', 'ignorecase_always', 'pass_through');
+STDERR->autoflush(1); # } Flush the output DIRECTLY to the output buffer without caching
+STDOUT->autoflush(1); # }
+
+use Data::Dump; # FIXME: Debug use only
+# }}} Header
+
+# Options {{{
+our $yearmatch = qr/.*([0-9]{4}).*/; # Year grabbing RegExp
+our @regexps = ( # Regular expressions used to tidy up file name
+	qr/www\..+?\.com/i, # Clean up www.address.com
+	qr/dvdrip/i,
+	qr/english|italian|spanish|german|dutch/i, # Countries
+	qr/720p|AC3/, # Resolutions
+	qr/final|screener|cam/i, # Types
+	qr/\(.+?\)/, # Strip brackets
+	qr/\[.+?\]/, # ... All kinds of brackets
+	qr/\{.+?\}/,
+
+	qr/^swghd-/, #Annoying studios that put their name first
+
+	qr/-.*$/, # Clean up suffixes (e.g. '-Axxo')
+
+	qr/[A-Z][a-z]+[A-Z][a-zA-Z]*/, # CamelCasing
+);
+# }}} Options
+
+my $use_imdb = 1;
+my $use_regexp = 1;
+my $use_year = 1;
+my $use_garbage = 1;
+my $template = "%t.%e";
+GetOptions(
+	# Global options
+	'imdb|i' => \$use_imdb,
+	'regexp|r' => \$use_regexp,
+	'year|y' => \$use_year,
+	'garbage|g' => \$use_garbage,
+	'verbose|v+' => \$verbose,
+	'skip_af' => \$skip_af, # Skip on Autocorrection fail (i.e. dont bother with imdb)
+	'template|t=s' => \$template, # Template to use when renaming (%t = title, %y = year, %e = ext)
+	'dir|d=s' => \$udir, # Override dir to output to (e.g. '.')
+	'dryrun|n' => \$dryrun, # Dont actually do anything
+);
+$udir =~ s/\/$//; # Strip final '/' if it has one
+
+while ($file = shift) {
+	my $year;
+	my $dir = dirname($file);
+	$_ = basename($file);
+	unless (s/\.((?:avi|mp.|mkv|mov))$//) {
+		say(1, "Unrecognized file type: $file. Ignoring");
+		next;
+	}
+	my $ext = $1;
+
+	say(1, "File: $file");
+	(($year) = (m/$yearmatch/)) if $use_year; # Try to determine year
+	if ($use_regexp) {
+		foreach $re (@regexps) {
+			say(5, "Apply: [$re] to [$_]");
+			s/$re//i;
+			last unless $_;
+		}
+	}
+	s/[0-9]{4}//; # Stip year stuff out of title
+	s/[^a-z0-9]+/ /gi if ($use_garbage); # Strip garbage characters
+
+	unless ($_) {
+		say(0, " * Auto correction failed");
+		$_ = $file;
+		next if $skip_af;
+	}
+	my $title = $_;
+	say(1, " * Guessed name: $_");
+	say(1, " * Guessed year: $year") if $year;
+	say(2, " * Ext: $ext");
+	say(2, " * Dir: $dir");
+
+	if ($use_imdb) {
+		my $film = new IMDB::Film(
+			crit => $title,
+			year => $year,
+		);
+		if ($film->status()) {
+			$title = $film->title();
+			$year = $film->year();
+			say(1, "IMDB Title = $title ($year)");
+		} else {
+			say(1, "IMDB - Nothing found. Skipping");
+			next;
+		}
+	}
+
+	my $new = $template;
+	$new =~ s/%t/$title/;
+	$new =~ s/%y/$year/;
+	$new =~ s/%e/$ext/;
+	$new = ($udir) ? "$udir/$new" : "$dir/$new";
+
+	say(0, "Rename '$file' '$new'");
+}
