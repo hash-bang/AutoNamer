@@ -24,6 +24,14 @@ By default AN will try to rename the file in place, not altering the original fi
 
 Do everything BUT change the filename. This is used mainly to see what AN I<would> do without actually doing it.
 
+=item B<--fakes>
+
+-item <B--no-fakes>
+
+Allow fake (i.e. non-existant) files to be passed on to AutoNamer.
+If this is set a list of fake files can be passed and names can be suggested. Trying to rename these files will obviously fail.
+This functionality is added primerily for testing purposes.
+
 =item B<--garbage>
 
 =item B<--no-garbage>
@@ -223,6 +231,7 @@ GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	'dir|d=s' => \$udir, # Override dir to output to (e.g. '.')
 	'dryrun|n' => \$dryrun, # Dont actually do anything
 	'ui=s' => \$ui,
+	'fakes!' =>\$fakes,
 );
 fatal("Invalid UI mode. --ui can be auto,cli,gtk") unless $ui =~ /auto|cli|gtk|debug/;
 
@@ -234,6 +243,10 @@ my $module = 'AutoNamer::' . ucfirst($ui);
 my $interface = $module->new;
 
 FILE: while ($raw = shift) { # For each file...
+	if (! -e $raw and !$fakes) { # File doesn't exist and we care about that
+		say(0, "None existant file: $raw. Use --fakes if you want to force this");
+		next;
+	}
 	my $year;
 	my $dir = dirname($raw); # Extract the dir...
 	$_ = $original = basename($raw); # ...And throw it away, leaving the pure file name

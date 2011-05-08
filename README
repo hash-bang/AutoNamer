@@ -15,6 +15,14 @@ OPTIONS
     -n      Do everything BUT change the filename. This is used mainly to
             see what AN *would* do without actually doing it.
 
+    --fakes -item <B--no-fakes>
+
+            Allow fake (i.e. non-existant) files to be passed on to
+            AutoNamer. If this is set a list of fake files can be passed and
+            names can be suggested. Trying to rename these files will
+            obviously fail. This functionality is added primerily for
+            testing purposes.
+
     --garbage
     --no-garbage
             Try to clean up the filename by removing all non english
