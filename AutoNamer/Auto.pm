@@ -8,11 +8,11 @@ sub new {
 }
 
 sub rename {
-	my ($self, $original, $new, $dryrun, $dir, $ext) = @_;
+	my ($self, $original, $new, $dryrun, $sdir, $dir) = @_;
 	say(0, "Rename: '$original' -> '$new' (dir = '$dir', ext = '$ext')");
 
 	unless ($dryrun) {
-		say(0, "Problem moving file '$original' to '$new'") unless rename $raw, $new;
+		say(0, "Problem moving file '$original' to '$new'") unless rename "$sdir/$raw", "$dir/$new";
 	}
 }
 

@@ -285,7 +285,7 @@ FILE: while ($raw = shift) { # For each file...
 	$new =~ s/%y/$year/;
 	$new =~ s/%e/$ext/;
 
-	$interface->rename($raw, $new, $dryrun, $dir, $ext);
+	$interface->rename($original, $new, $dryrun, $dir, ($udir) ? $udir : $dir, $ext);
 }
 $interface->finish;
 

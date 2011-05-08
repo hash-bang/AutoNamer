@@ -8,7 +8,7 @@ sub new {
 }
 
 sub rename {
-	my ($self, $original, $new, $dryrun, $dir, $ext) = @_;
+	my ($self, $original, $new, $dryrun, $sdir, $dir) = @_;
 
 	CONSOLE: {
 		say(0) if $fileno++; # Intert blank line so we dont upset dumb people
@@ -20,10 +20,9 @@ sub rename {
 				redo CONSOLE;
 			}
 			when ('g') { # Do it
-				$new = ($udir) ? "$udir/$new" : "$dir/$new";
 				say(0, "Rename '$raw' '$new'");
 				unless ($dryrun) {
-					say(0, "Problem moving file '$raw' to '$new'") unless rename $raw, $new;
+					say(0, "Problem moving file '$raw' to '$new'") unless rename "$sdir/$raw", "$dir/$new";
 				}
 			}
 			when ('s') { next FILE } # Skip

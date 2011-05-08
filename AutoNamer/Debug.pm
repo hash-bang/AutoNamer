@@ -8,8 +8,8 @@ sub new {
 }
 
 sub rename {
-	my ($self, $original, $dryrun, $new, $dir, $ext) = @_;
-	say(0, "Rename: '$original' -> '$new' (dir = '$dir', ext = '$ext')");
+	my ($self, $original, $dryrun, $new, $sdir, $dir) = @_;
+	say(0, "Rename: '$original' -> '$new' (source dir = '$sdir', dst dir = '$dir')");
 }
 
 sub finish {
