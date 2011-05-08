@@ -14,5 +14,8 @@ push: commit
 version:
 	echo "VERSION IS $(VERSION)"
 
+test:
+	xargs an --no-imdb --fakes -vvn --ui debug <tests/Torrents.txt
+
 clean:
 	-rm -r $(DEBFACTORY)
