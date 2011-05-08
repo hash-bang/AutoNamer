@@ -38,12 +38,6 @@ Can be negated with --no-year.
 Try to contact IMDB to finalize details we've guessed in the earlier stages.
 Can be negated with --no-imdb.
 
-=item B<--interactive>
-
-=item B<-i>
-
-Specifies that AN should operate in interactive mode. After determining the desination file the user will be presented with options as to what operations to apply.
-
 =item B<--regexp>
 
 =item B<--no-regexp>
@@ -55,6 +49,28 @@ Can be negated with --no-regexp.
 
 Skip the IMDB stage if we dont manage to clean up the file name correctly.
 If not set (the default) and the autocorrection stage fails, the original filename will be passed onto IMDB in a last ditch attempt to get something meaningful.
+
+=item B<--ui [ui]>
+
+Sets which output interface to use. The default is 'auto'.
+
+Possible choices are:
+
+=over
+
+=item auto
+
+The default, this interface simply renames the files using the default suggestions.
+
+=item cli
+
+Interactive console mode. The user will be prompted upon each suggestion.
+
+=item gtk
+
+Use the GTK libraries to draw a graphical GUI interface.
+
+=back
 
 =item B<-v>
 
@@ -206,7 +222,6 @@ GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	'template|t=s' => \$template,
 	'dir|d=s' => \$udir, # Override dir to output to (e.g. '.')
 	'dryrun|n' => \$dryrun, # Dont actually do anything
-	'interactive|i!' => \$interactive,
 	'ui=s' => \$ui,
 );
 fatal("Invalid UI mode. --ui can be auto,cli,gtk") unless $ui =~ /auto|cli|gtk|debug/;
