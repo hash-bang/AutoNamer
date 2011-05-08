@@ -26,11 +26,6 @@ OPTIONS
             Try to contact IMDB to finalize details we've guessed in the
             earlier stages. Can be negated with --no-imdb.
 
-    --interactive
-    -i      Specifies that AN should operate in interactive mode. After
-            determining the desination file the user will be presented with
-            options as to what operations to apply.
-
     --regexp
     --no-regexp
             Apply the known regular expression hacks to try to tidy up the
@@ -41,6 +36,20 @@ OPTIONS
             correctly. If not set (the default) and the autocorrection stage
             fails, the original filename will be passed onto IMDB in a last
             ditch attempt to get something meaningful.
+
+    --ui [ui]
+            Sets which output interface to use. The default is 'auto'.
+
+            Possible choices are:
+
+            auto
+                The default, this interface simply renames the files using
+                the default suggestions.
+
+            cli Interactive console mode. The user will be prompted upon
+                each suggestion.
+
+            gtk Use the GTK libraries to draw a graphical GUI interface.
 
     -v
     --verbose
