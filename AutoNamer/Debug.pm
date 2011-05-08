@@ -13,7 +13,7 @@ sub rename {
 }
 
 sub finish {
-	my($self) = @_;
+	my($self, $dryrun) = @_;
 	say(0, 'Finish!');
 }
 
