@@ -12,8 +12,6 @@ push: commit
 	git push
 
 update:
-	#git submodule init MC
-	#git submodule update MC
 	cd MC; git pull
 
 version:

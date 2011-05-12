@@ -1,5 +1,5 @@
 package AutoNamer::Auto;
-use MC::Input::Cli;
+use Input::Cli;
 
 sub new {
 	my $self = {};

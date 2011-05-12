@@ -1,7 +1,7 @@
 package AutoNamer::Gtk;
+use Input::Cli;
 use Gtk2 '-init';
 use Gtk2::SimpleList;
-use MC::Input::Cli;
 use constant TRUE  => 1;
 use constant FALSE => 0;
 
