@@ -1,4 +1,5 @@
 package AutoNamer::Cli;
+use feature 'switch';
 use Input::Cli;
 
 sub new {
