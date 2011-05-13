@@ -1,6 +1,6 @@
 package AutoNamer::Cli;
 use feature 'switch';
-use Input::Cli;
+use MC::Input::Cli;
 
 sub new {
 	my $self = {};
