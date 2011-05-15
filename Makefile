@@ -18,7 +18,7 @@ version:
 	echo "VERSION IS $(VERSION)"
 
 test:
-	xargs an --no-imdb --fakes -vvn --ui debug <tests/Torrents.txt
+	xargs an --no-imdb --fakes -vvn --ui debug <tests/Movies.txt
 
 clean:
 	-rm -r $(DEBFACTORY)
