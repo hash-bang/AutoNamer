@@ -12,6 +12,13 @@ an - AutoNamer, Simple app that tries to correctly name media files.
 
 =over 8
 
+=item B<--case>
+
+=item B<--no-case>
+
+Try to clean up the filename by checking for common casing faults such as CaMeLcAsInG or FULL CAPS.
+Can be negated with --no-case.
+
 =item B<--dir [path]>
 
 =item B<-d [path]>
@@ -218,6 +225,7 @@ my $use_imdb = 1; # Turn on all these things by default. If the user dones't wan
 my $use_regexp = 1;
 my $use_year = 1;
 my $use_garbage = 1;
+my $use_case = 1;
 my $template = "%t.%e";
 my $ui = 'auto';
 my $interface = MC::Input::Multiplexor->new('AutoNamer');
@@ -227,6 +235,7 @@ GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	'regexp!' => \$use_regexp,
 	'year!' => \$use_year,
 	'garbage!' => \$use_garbage,
+	'case!' => \$use_case,
 	'verbose|v+' => \$verbose,
 	'skip!' => \$skip_af,
 	'template|t=s' => \$template,
@@ -236,7 +245,7 @@ GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	'fakes!' =>\$fakes,
 	'version' => \$version,
 );
-fatal("Invalid UI mode. --ui can be " . join(',', @{$interface->choices})) unless $ui =~ /auto|cli|gtk|debug/;
+fatal("Invalid UI mode. --ui can be " . join(',', @{$interface->choices})) unless $ui =~ /auto|cli|gtk|debug|test/;
 if ($version) {
 	say(0, "AutoNamer $VERSION");
 	say(0, "Written by Matt Carter <m@ttcarter.com>");
@@ -275,8 +284,14 @@ FILE: while ($raw = shift) { # For each file...
 	s/[^a-z0-9]+/ /gi if ($use_garbage); # Strip garbage characters
 	s/^\s*//; s/\s*$//; # Trim fore & aft
 
+	if ($use_case) {
+		if (/[a-z]/ and /[A-Z]/) { # Mixed case filename
+			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'I am Number Four CRACKORZ!.avi')
+		}
+	}
+
 	unless ($_) { # Nothing left?
-		say(0, " * Auto correction failed");
+		say(1, " * Auto correction failed");
 		next FILE if $skip_af; # Skip if skipaf is on
 		$_ = $original; # Otherwise restore original name
 	}
