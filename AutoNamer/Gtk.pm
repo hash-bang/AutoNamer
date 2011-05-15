@@ -9,6 +9,8 @@ my $window;
 my $dryrun;
 my $list;
 
+my @filedata;
+
 sub new {
 	my $class = shift;
 	my $self = {};
@@ -29,8 +31,6 @@ sub initialize {
 	      'Do' => 'bool',
 	      'New name' => 'text',
 	      'Original' => 'text',
-	      'Source dir' => 'text',
-	      'Dest dir' => 'text',
 	);
 	$self->{list}->set_column_editable(1, TRUE);
 	
@@ -55,7 +55,8 @@ sub initialize {
 
 sub rename {
 	my ($self, $original, $new, $dryrun, $sdir, $dir) = @_;
-	push @{$self->{list}->{data}}, [ 1, $new, $original, $sdir, $dir ];
+	push @{$self->{filedata}}, [$sdir, $dir];
+	push @{$self->{list}->{data}}, [ 1, $new, $original ];
 }
 
 sub finish {
@@ -69,8 +70,9 @@ sub renameall {
 	my ($button, $self) = @_;
 	use Data::Dump;
 	say(0,'Begin');
-	foreach (@{$self->{list}->{data}}) {
-		my ($do, $new, $original, $sdir, $dir) = @{$_};
+	foreach $offset (0..length(@{$self->{list}->{data}})) {
+		my ($do, $new, $original) = @{$self->{list}->{data}->[$offset]};
+		my ($sdir, $dir) = @{$self->{filedata}->[$offset]}; # Scoop hidden data
 		next unless $do;
 		say(0, "Rename '$sdir/$original' -> '$dir/$new'");
 		unless ($self->{dryrun}) {
