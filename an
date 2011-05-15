@@ -227,7 +227,7 @@ my $use_year = 1;
 my $use_garbage = 1;
 my $use_case = 1;
 my $template = "%t.%e";
-my $ui = 'auto';
+my $ui = ($ENV{DISPLAY} ? 'gtk' : 'auto'); # Default to graphical if we have a DISPLAY setup, otherwise dumb console
 my $interface = MC::Input::Multiplexor->new('AutoNamer');
 GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	# Global options
@@ -258,7 +258,10 @@ $udir =~ s/\/$//; # Strip final '/' from the output dir if the user specified on
 
 $interface = $interface->load($ui); # Load in the output interface
 
+@ARGV = <> unless (@ARGV); # Read files from STDIN if we didn't get anything on ARGV
+
 FILE: while ($raw = shift) { # For each file...
+	chomp $raw;
 	if (! -e $raw and !$fakes) { # File doesn't exist and we care about that
 		say(0, "None existant file: $raw. Use --fakes if you want to force this");
 		next;
@@ -284,9 +287,9 @@ FILE: while ($raw = shift) { # For each file...
 	s/[^a-z0-9]+/ /gi if ($use_garbage); # Strip garbage characters
 	s/^\s*//; s/\s*$//; # Trim fore & aft
 
-	if ($use_case) {
+	if ($use_case) { # Apply casing hacks
 		if (/[a-z]/ and /[A-Z]/) { # Mixed case filename
-			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'I am Number Four CRACKORZ!.avi')
+			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'Oliver Twist CRACKORZ!.avi')
 		}
 	}
 
@@ -320,8 +323,13 @@ FILE: while ($raw = shift) { # For each file...
 	$new =~ s/%y/$year/;
 	$new =~ s/%e/$ext/;
 
+	$renames++;
 	$interface->rename($original, $new, $dryrun, $dir, ($udir) ? $udir : $dir, $ext);
 }
-$interface->finish($dryrun);
+if ($renames) {
+	$interface->finish($dryrun);
+} else {
+	say(0, "Nothing to do");
+}
 
 exit 0;
