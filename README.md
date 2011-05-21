@@ -1,10 +1,26 @@
+AutoNamer is a Perl script to try and correct weird file names for movies, music or TV shows.
+
+It works by applying some simple (and configurable) rules to the file names in order to clean them up.
+
+AutoNamer will try its best to correct file names given to it automatically. If --ui is specified it is possible to make this process interactive where AutoNamer will ask the user exactly what operations should be applied.
+
+Command line reference
+======================
+<!-- POD -->
 NAME
-    an - AutoNamer, Simple app that tries to correctly name media files.
+    autonamer - AutoNamer, Simple app that tries to correctly name media
+    files.
 
 SYNOPSIS
             an [options] [files...]
 
 OPTIONS
+    --case
+    --no-case
+            Try to clean up the filename by checking for common casing
+            faults such as CaMeLcAsInG or FULL CAPS. Can be negated with
+            --no-case.
+
     --dir [path]
     -d [path]
             By default AN will try to rename the file in place, not altering
@@ -127,3 +143,18 @@ BUGS
 AUTHOR
     Matt Carter <m@ttcarter.com>
 
+<!-- END POD -->
+Suffix
+
+TODO
+====
+
+=over
+
+=item .Deb files for Linux systems
+
+=item .exe installation files for Windows
+
+=item Refine the UI a bit so its more polished
+
+=back
