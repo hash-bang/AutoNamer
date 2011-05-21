@@ -1,4 +1,4 @@
-package AutoNamer::Gtk;
+package AutoNamer::UI::Gtk;
 use Gtk2 '-init';
 use Gtk2::SimpleList;
 use MC::Input::Cli;

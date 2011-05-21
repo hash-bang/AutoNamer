@@ -1,4 +1,4 @@
-package AutoNamer::Cli;
+package AutoNamer::UI::Cli;
 use feature 'switch';
 use MC::Input::Cli;
 

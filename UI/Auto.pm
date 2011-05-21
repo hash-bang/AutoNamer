@@ -1,4 +1,4 @@
-package AutoNamer::Auto;
+package AutoNamer::UI::Auto;
 use MC::Input::Cli;
 
 sub new {

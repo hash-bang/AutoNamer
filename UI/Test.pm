@@ -1,4 +1,4 @@
-package AutoNamer::Test;
+package AutoNamer::UI::Test;
 use MC::Input::Cli;
 
 # Simple test output interface designed to echo results compatible with the Perl testing suite

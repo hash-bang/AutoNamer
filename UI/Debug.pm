@@ -1,4 +1,4 @@
-package AutoNamer::Debug;
+package AutoNamer::UI::Debug;
 use MC::Input::Cli;
 
 sub new {
