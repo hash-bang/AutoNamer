@@ -205,6 +205,7 @@ our @regexps = ( # Regular expressions used to tidy up file name
 	qr/www\..+?\.com/i, # Clean up www.address.com
 	qr/dvdrip/i, # Simple strings we dont care about
 	qr/english|italian|spanish|german|dutch/i, # Languages
+	qr/\beng|fr|ita\b/i, # Short language forms
 	qr/720p|AC3/, # Resolutions
 	qr/final|screener|cam/i, # Types
 	qr/\(.+?\)/, # Strip brackets
@@ -267,11 +268,12 @@ FILE: while ($raw = shift) { # For each file...
 	}
 	my $year;
 	my $dir = dirname($raw); # Extract the dir...
-	$_ = $original = basename($raw); # ...And throw it away, leaving the pure file name
+	$_ = basename($raw); # ...And throw it away, leaving the pure file name
 	unless (s/\.((?:avi|mp[0-9]|mkv|mov|qt|vob|yav|raw))$//) { # We only care about these
 		say(1, "Unrecognized file type: $original. Ignoring");
 		next FILE;
 	}
+	my $original = $_; # Remember the original filename before we started mangling
 	my $ext = $1; # Nasty hack to work around extracting from a s//
 
 	say(1, "File: $original");
