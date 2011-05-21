@@ -44,6 +44,9 @@ sub rename {
 	}
 }
 
+sub skip {
+}
+
 sub finish {
 	my($self, $dryrun) = @_;
 	say(0, 'Finished');

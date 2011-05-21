@@ -12,6 +12,11 @@ sub rename {
 	say(0, "Rename: '$original' -> '$new' (source dir = '$sdir', dst dir = '$dir')");
 }
 
+sub skip {
+	my ($self, $reason, $original, $dryrun) = @_;
+	say(0, "Skipped ($reason): $original");
+}
+
 sub finish {
 	my($self, $dryrun) = @_;
 	say(0, 'Finish!');

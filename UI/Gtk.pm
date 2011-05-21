@@ -59,6 +59,9 @@ sub rename {
 	push @{$self->{list}->{data}}, [ 1, $new, $original ];
 }
 
+sub skip {
+}
+
 sub finish {
 	my ($self, $dryrun) = @_;
 	$self->{dryrun} = $dryrun;

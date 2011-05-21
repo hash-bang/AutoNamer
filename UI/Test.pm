@@ -14,6 +14,11 @@ sub rename {
 	print $new, "\n";
 }
 
+sub skip {
+	my ($self, $reason, $original, $dryrun) = @_;
+	print $original, "\n";
+}
+
 sub finish {
 }
 
