@@ -2,7 +2,7 @@
 # POD {{{
 =head1 NAME
 
-an - AutoNamer, Simple app that tries to correctly name media files.
+autonamer - AutoNamer, Simple app that tries to correctly name media files.
 
 =head1 SYNOPSIS
 
@@ -178,7 +178,7 @@ Matt Carter <m@ttcarter.com>
 # }}} POD
 
 # Header {{{
-package AutoNamer::Core;
+package AutoNamer;
 our $VERSION = '0.1.0';
 
 use feature 'switch';
@@ -228,7 +228,7 @@ my $use_garbage = 1;
 my $use_case = 1;
 my $template = "%t.%e";
 my $ui = ($ENV{DISPLAY} ? 'gtk' : 'auto'); # Default to graphical if we have a DISPLAY setup, otherwise dumb console
-my $interface = MC::Input::Multiplexor->new('AutoNamer');
+my $interface = MC::Input::Multiplexor->new('UI', 'AutoNamer');
 GetOptions( # Getopts, "Making Perl more confusing since 1985"
 	# Global options
 	'imdb!' => \$use_imdb,
