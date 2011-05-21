@@ -214,6 +214,8 @@ our @regexps = ( # Regular expressions used to tidy up file name
 	qr/\<.+?\>/, # ... Still more brackets
 
 	qr/^swghd-/, # Annoying studios that put their name first, screwing up the next RegExp
+	qr/\b[a-z]+crew\b/i, # Catch common 'FooBarCrew' type names
+
 	qr/-.*$/, # Clean up suffixes (e.g. '-Axxo')
 
 	qr/[0-9]{4}/, # Strip remaining year stuff out of the title
@@ -289,9 +291,11 @@ FILE: while ($raw = shift) { # For each file...
 	s/^\s*//; s/\s*$//; # Trim fore & aft
 
 	if ($use_case) { # Apply casing hacks
-		if (/[a-z]/ and /[A-Z]/) { # Mixed case filename
+		if (/\b[A-Z][a-z]{2,}\b/) { # At least one validly cased word detected: e.g. 'Foobar'
+			say(3, " * Applying case rules to: $_");
 			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'Oliver Twist CRACKORZ!.avi')
-			s/[A-Z][a-z]+[A-Z][a-zA-Z]*//g # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
+			s/[A-Z][a-z]+[A-Z][a-zA-Z]*//g; # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
+			s/^\s*//; s/\s*$//; # Trim fore & aft
 		}
 	}
 
@@ -319,6 +323,7 @@ FILE: while ($raw = shift) { # For each file...
 			say(1, "IMDB: Nothing found");
 		}
 	}
+	say(1, " * Final name: $_");
 
 	my $new = $template; # Construct the output template
 	$new =~ s/%t/$title/;
