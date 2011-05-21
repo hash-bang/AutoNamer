@@ -21,7 +21,10 @@ version:
 	echo "VERSION IS $(VERSION)"
 
 test:
-	xargs autonamer --no-imdb --fakes -vvn --ui debug <tests/Movies.txt
+	cat tests/Movies.txt | autonamer --no-imdb --fakes -vvn --ui debug
+
+test-gtk:
+	cat tests/Movies.txt | autonamer --no-imdb --fakes -vvn --ui gtk
 
 clean:
 	-rm -r $(DEBFACTORY)
