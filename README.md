@@ -7,7 +7,7 @@ AutoNamer will try its best to correct file names given to it automatically. If 
 Command line reference
 ======================
 ```
-<!-- POD -->
+<!--- POD -->
 NAME
     autonamer - AutoNamer, Simple app that tries to correctly name media
     files.
@@ -144,18 +144,12 @@ BUGS
 AUTHOR
     Matt Carter <m@ttcarter.com>
 
-<!-- END POD -->
+<!--- END POD -->
 ```
 
 TODO
 ====
 
-=over
-
-=item .Deb files for Linux systems
-
-=item .exe installation files for Windows
-
-=item Refine the UI a bit so its more polished
-
-=back
+* .Deb files for Linux systems
+* .exe installation files for Windows
+* Refine the UI a bit so its more polished
