@@ -1,5 +1,8 @@
 #!/usr/bin/perl
-#use Test::Simple tests => 10;
+use FileHandle;
+use IPC::Open2;
+use Data::Dump;
+use Test;
 
 $_ = q/
 I Am Number Four 2011 PPVRIP IFLIX www.IWANNADOWNLOAD.com.avi	| I Am Number Four.avi
@@ -14,12 +17,23 @@ Troy.avi							| Troy.avi
 Charlie And The Chocolate Factory KLAXXON.avi			| Charlie And The Chocolate Factory.avi
 /;
 
-foreach (split /\n/) {
+my @files, @expect;
+foreach (split /\n/) { # Parse the input into @files and @expect
 	my($given, $desired) = (m/^(.*?)\s*\|\s*(.*)\s*$/m);
 	next unless $given;
-	$corrected = `an --noimdb --ui test --fake '$given'`;
-	chomp $corrected;
+	push @files, $given;
+	push @expect, $desired;
+}
+$pid = open2(ANOUT, ANIN, 'autonamer --noimdb --ui test --fake'); # Throw input though AutoNamer
+print ANIN join "\n", @files;
+close ANIN;
 
-	print STDERR ($corrected eq $desired ? ' OK ' : 'FAIL'), " - '$given' -> '$corrected'\n";
-	#ok($corrected eq $desired, "Auto correct: '$given' -> '$desired'");
+plan tests => scalar(@files); # Setup tests now we know how many to run
+
+while ($got = <ANOUT>) {
+	chomp $got;
+	$raw = shift @files;
+	$wanted = shift @expect;
+	#print STDERR ($got eq $wanted ? ' OK ' : 'FAIL'), " - Got '$got' wanted '$wanted' (from '$raw')\n";
+	ok($got, $wanted);
 }
