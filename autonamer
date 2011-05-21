@@ -215,7 +215,6 @@ our @regexps = ( # Regular expressions used to tidy up file name
 	qr/^swghd-/, # Annoying studios that put their name first, screwing up the next RegExp
 	qr/-.*$/, # Clean up suffixes (e.g. '-Axxo')
 
-	qr/[A-Z][a-z]+[A-Z][a-zA-Z]*/, # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
 	qr/[0-9]{4}/, # Strip remaining year stuff out of the title
 );
 # }}} Options
@@ -290,6 +289,7 @@ FILE: while ($raw = shift) { # For each file...
 	if ($use_case) { # Apply casing hacks
 		if (/[a-z]/ and /[A-Z]/) { # Mixed case filename
 			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'Oliver Twist CRACKORZ!.avi')
+			s/[A-Z][a-z]+[A-Z][a-zA-Z]*//g # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
 		}
 	}
 
