@@ -6,6 +6,7 @@ AutoNamer will try its best to correct file names given to it automatically. If 
 
 Command line reference
 ======================
+```
 <!-- POD -->
 NAME
     autonamer - AutoNamer, Simple app that tries to correctly name media
@@ -144,7 +145,7 @@ AUTHOR
     Matt Carter <m@ttcarter.com>
 
 <!-- END POD -->
-Suffix
+```
 
 TODO
 ====
