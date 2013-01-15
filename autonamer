@@ -299,6 +299,8 @@ FILE: while ($raw = shift) { # For each file...
 			s/\s*[A-Z]{2,}\s*//g; # Fix out of place excessive caps (e.g. 'Oliver Twist CRACKORZ!.avi')
 			s/[A-Z][a-z]+[A-Z][a-zA-Z]*//g; # ClEaN CamelCasing. BeCauSe iTs BloOdY anNoyIng
 			s/^\s*//; s/\s*$//; # Trim fore & aft
+		} elsif (/\b[a-z]+\b/) { # All in lower case?
+			s/([a-z])/\U\1\E/i; # UCFirst
 		}
 	}
 
@@ -329,13 +331,8 @@ FILE: while ($raw = shift) { # For each file...
 	}
 	say(1, " * Final name: $_");
 
-	my $new = $template; # Construct the output template
-	$new =~ s/%t/$title/;
-	$new =~ s/%y/$year/;
-	$new =~ s/%e/$ext/;
-
 	$renames++;
-	$interface->rename($original, $new, $dryrun, $dir, ($udir) ? $udir : $dir, $ext);
+	$interface->rename($original, "$_.$ext", $dryrun, $dir, ($udir) ? $udir : $dir, $ext);
 }
 if ($renames) {
 	$interface->finish($dryrun);
