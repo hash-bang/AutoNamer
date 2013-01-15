@@ -1,0 +1,10 @@
+Package: autonamer
+Source: autonamer
+Version: $VERSION
+Architecture: all
+Maintainer: Matt Carter <m@ttcarter.com>
+Depends: perl (>= 5.10.0)
+Section: utils
+Priority: optional
+Homepage: https://github.com/hash-bang/AutoNamer
+Description: A simple script to automatically rename media files
